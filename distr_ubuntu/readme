@@ -1,0 +1,2 @@
+копируем все исходники DEBIAN/etc/photoarchive/ и запускауем 
+sudo dpkg-deb --build . photoarchive.deb

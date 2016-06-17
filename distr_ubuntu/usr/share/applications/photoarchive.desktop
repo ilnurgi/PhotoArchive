@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=PhotoArchive
+Comment=PhotoArchive Application
+Exec=/usr/bin/photoarchive
+Terminal=false
+Type=Application
+Categories=Graphics;

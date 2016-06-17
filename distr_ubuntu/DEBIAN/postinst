@@ -1,0 +1,3 @@
+pip install virtualenv
+virtualenv --no-site-packages /etc/photoarchive/env
+/etc/photoarchive/env/bin/pip install -r /etc/photoarchive/requirements

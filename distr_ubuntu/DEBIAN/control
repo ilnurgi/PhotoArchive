@@ -1,0 +1,8 @@
+Package: PhotoArchive
+Version: 0.0.1
+Section: misc
+Priority: extra
+Maintainer: ilnurgi
+Architecture: all
+Depends: python-pip, python-tk
+Description: PhotoArchive description
