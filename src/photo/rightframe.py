@@ -4,11 +4,11 @@
 панель, в которой отображаются картинка и вся остальная информация
 """
 
-import os
-import datetime
 from collections import OrderedDict
+import datetime
+import os
 
-from Tkinter import Label, Button
+from Tkinter import Label, Button, Entry
 from tkMessageBox import showerror
 
 from PIL import Image, ImageTk
@@ -33,6 +33,8 @@ TEXT_EXIF_DATE_ORIGINAL = u'Дата фотографии'
 TEXT_EXIF_DATE_DIGITIZED = u'Дата фотографии2'
 TEXT_EXIF_DATE_TIME = u'Дата фотографии3'
 
+TEXT_MY_NAME = u'Моё имя'
+
 LABELS = (
     TEXT_FILE_PATH,
     TEXT_SIZE,
@@ -51,7 +53,7 @@ LABELS_RENAME = {
     TEXT_DATE_ACCESS,
     TEXT_EXIF_DATE_ORIGINAL,
     TEXT_EXIF_DATE_DIGITIZED,
-    TEXT_EXIF_DATE_TIME
+    TEXT_EXIF_DATE_TIME,
 }
 
 
@@ -106,6 +108,18 @@ class SettingsFrame(BasePAFrame):
              })
             for label in LABELS)
 
+        _entry_data = Entry(self)
+        _btn_rename = Button(self, text=u'Переименовать')
+        _btn_rename.bind('<Button-1>', self.click_rename_button)
+        _btn_rename.meta = {
+            'entry_widget': _entry_data
+        }
+        self.widgets[TEXT_MY_NAME] = {
+            'label': Label(self, text=TEXT_MY_NAME),
+            'label_data': _entry_data,
+            'button_rename': _btn_rename
+        }
+
         for label, label_widgets in self.widgets.iteritems():
             if label in LABELS_RENAME:
                 label_widgets['button_rename'] = Button(
@@ -157,7 +171,7 @@ class SettingsFrame(BasePAFrame):
             (TEXT_EXIF_DATE_DIGITIZED,
              exif_data[EXIF_TAGS_REVERSE['DateTimeDigitized']]),
             (TEXT_EXIF_DATE_TIME,
-             exif_data[EXIF_TAGS_REVERSE['DateTime']])
+             exif_data[EXIF_TAGS_REVERSE['DateTime']]),
         )
 
         for text, data in bind_maps:
@@ -167,29 +181,44 @@ class SettingsFrame(BasePAFrame):
                 self.widgets[text]['button_rename'].meta['data'] = data
                 self.widgets[text]['button_rename'].meta['size'] = stat.st_size
 
+        self.widgets[TEXT_MY_NAME]['button_rename'].meta['file_path'] = file_path
+        self.widgets[TEXT_MY_NAME]['button_rename'].meta['data'] = TEXT_MY_NAME
+        self.widgets[TEXT_MY_NAME]['button_rename'].meta['size'] = stat.st_size
+
     def reset(self):
         for labels in self.widgets.values():
             labels['label_data'].config(text=u'')
             if 'button_rename' in labels:
+                _entry_widget = labels['button_rename'].meta.get(
+                    'entry_widget', None)
+
                 labels['button_rename'].meta = {}
+
+                if _entry_widget:
+                    labels['button_rename'].meta['entry_widget'] = _entry_widget
 
     def click_rename_button(self, event):
         meta = event.widget.meta
         if not meta:
             return
 
-        try:
-            date = datetime.datetime.strptime(
-                meta['data'], DATE_TIME_FORMAT)
-        except ValueError:
+        if 'entry_widget' in meta:
+            data = meta['entry_widget'].get()
+        else:
             try:
                 date = datetime.datetime.strptime(
-                    meta['data'], DATE_TIME_FORMAT_EXIF)
+                    meta['data'], DATE_TIME_FORMAT)
             except ValueError:
-                return
+                try:
+                    date = datetime.datetime.strptime(
+                        meta['data'], DATE_TIME_FORMAT_EXIF)
+                except ValueError:
+                    return
+
+            data = date.strftime(u'%Y%m%d_%H%M%S')
         new_file_name = (
             u'{0}_{1}{2}'.format(
-                date.strftime(u'%Y%m%d_%H%M%S'),
+                data,
                 meta['size'],
                 os.path.splitext(meta['file_path'])[-1]))
         new_file_dir = os.path.dirname(meta['file_path'])
