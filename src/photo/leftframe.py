@@ -6,18 +6,20 @@
 
 import os
 
-from Tkinter import Listbox, BOTH, Button, TOP, X, END, E, W, S, N
-from tkFileDialog import askdirectory
+from Tkinter import Listbox, END
 
-import settings
+from settings.model import settings
 
 from core.frame import BasePAFrame
+
+PREFIX_LEN = 2
+BACK_DIR_PATH = u'...'
 
 
 class LeftFrame(BasePAFrame):
     """
     левый фрейм,
-    в котором у нас находятся кнопка добавить каталог и список каталогов
+    в котором у нас находится список папок
     """
 
     def __init__(self, *args, **kwargs):
@@ -25,54 +27,28 @@ class LeftFrame(BasePAFrame):
 
         BasePAFrame.__init__(self, *args, **kwargs)
 
-        self.w_button_add_catalog = Button(
-            self, text=u'Добавить', command=self.click_button_add_catalog)
-        self.w_button_del_catalog = Button(
-            self, text=u'Удалить', command=self.click_button_del_catalog)
-        self.w_listbox_catalogs = Listbox(self) 
+        self.w_listbox_catalogs = Listbox(self)
 
+        self.current_catalog = settings.BASE_CATALOG
         self.catalogs = []
-        self.update_catalogs(settings.CATALOGS)
 
     def _pa_configure(self):
         BasePAFrame._pa_configure(self)
 
         self.w_listbox_catalogs.bind(
-            '<<ListboxSelect>>', self.select_listbox_catalogs)
+            '<<ListboxSelect>>', self.select_listbox_catalog)
+
+        self.w_listbox_catalogs.bind(
+            '<Double-Button-1>', self.select_listbox_catalogs)
 
         # задаем размеры и положение фреймов
-        self.w_button_add_catalog_rel_x = 0
-        self.w_button_add_catalog_rel_y = 0
-        self.w_button_add_catalog_rel_width = 1
-        self.w_button_add_catalog_rel_height = 0.05
-
-        self.w_button_del_catalog_rel_x = 0
-        self.w_button_del_catalog_rel_y = self.w_button_add_catalog_rel_height
-        self.w_button_del_catalog_rel_width = 1
-        self.w_button_del_catalog_rel_height = (
-            self.w_button_add_catalog_rel_height)
-
         self.w_listbox_catalogs_rel_x = 0
-        self.w_listbox_catalogs_rel_y = (
-            self.w_button_add_catalog_rel_height +
-            self.w_button_del_catalog_rel_height)
+        self.w_listbox_catalogs_rel_y = 0
         self.w_listbox_catalogs_rel_width = 1
         self.w_listbox_catalogs_rel_height = 1 - self.w_listbox_catalogs_rel_y
 
     def _pa_layout(self):
         BasePAFrame._pa_layout(self)
-
-        self.w_button_add_catalog.place(
-            relx=self.w_button_add_catalog_rel_x,
-            rely=self.w_button_add_catalog_rel_y,
-            relwidth=self.w_button_add_catalog_rel_width,
-            relheight=self.w_button_add_catalog_rel_height)
-
-        self.w_button_del_catalog.place(
-            relx=self.w_button_del_catalog_rel_x,
-            rely=self.w_button_del_catalog_rel_y,
-            relwidth=self.w_button_del_catalog_rel_width,
-            relheight=self.w_button_del_catalog_rel_height)
 
         self.w_listbox_catalogs.place(
             relx=self.w_listbox_catalogs_rel_x,
@@ -80,73 +56,53 @@ class LeftFrame(BasePAFrame):
             relwidth=self.w_listbox_catalogs_rel_width,
             relheight=self.w_listbox_catalogs_rel_height)
 
-    def get_save_settings(self):
-        save_settings = BasePAFrame.get_save_settings(self)
-        save_settings['LAST_CATALOG_DIR'] = settings.LAST_CATALOG_DIR
-        save_settings['CATALOGS'] = self.catalogs
-        return save_settings
-
-    def update_catalogs(self, catalogs):
-        exist_catalog_paths = set(catalog['path'] for catalog in self.catalogs)
-        for new_catalog in catalogs:
-            if new_catalog['path'] not in exist_catalog_paths:
-                self.catalogs.append(new_catalog)
-        self.catalogs.sort(key=lambda x: x['name'])
-        self.w_listbox_catalogs.delete(0, END)
-        self.w_listbox_catalogs.insert(
-            END, *(catalog['name'] for catalog in self.catalogs))
-
-    def click_button_add_catalog(self):
+    def set_catalog(self, catalog=None):
         """
-        обработчик добавления каталога фотографии
+        задаем новый корневой каталог
+        :param catalog:
         :return:
         """
-        path = askdirectory(
-            title=u'Выберите папку с фотографиями', 
-            initialdir=settings.LAST_CATALOG_DIR)
-        if not path:
+
+        catalog = catalog or settings.BASE_CATALOG
+
+        if not os.path.isdir(catalog):
             return
-            
-        settings.LAST_CATALOG_DIR = path
 
-        # TODO: необъодимо выводить прогрессбар, т.к. процесс может быть долгим
-        new_catalogs = []
-        new_catalogs_append = new_catalogs.append
-        catalog_paths = set()
-        for root, dirs, files in os.walk(path):
-            if root not in catalog_paths:
-                new_catalogs_append({
-                    'name': os.path.basename(root),
-                    'path': root
-                })
-                catalog_paths.add(root)
+        if isinstance(catalog, str):
+            catalog = catalog.decode('utf-8')
 
-            for _dir in dirs:
-                path = os.path.join(root, _dir)
-                if path in catalog_paths:
-                    new_catalogs_append({
-                        'name': _dir,
-                        'path': os.path.join(root, _dir)
-                    })
-                    catalog_paths.add(path)
-        self.update_catalogs(new_catalogs)
+        self.current_catalog = catalog
 
-    def click_button_del_catalog(self):
-        """
-        обработчик удаления каталога из списка каталогов
-        """
-        try:
-            index = self.w_listbox_catalogs.curselection()[0]
-            self.w_listbox_catalogs.delete(index)
-            del self.catalogs[index]
-        except IndexError:
-            return
+        if catalog != settings.BASE_CATALOG:
+            catalogs = [
+                u'{0}{1}'.format(
+                    BACK_DIR_PATH,
+                    self.current_catalog.replace(settings.BASE_CATALOG, ''))]
         else:
-            self.w_frame_child.set_catalog(None)
+            catalogs = []
+
+        for _catalog in os.listdir(catalog):
+            _path = os.path.join(catalog, _catalog)
+            if os.path.isdir(_path):
+                if any(
+                        i for i in os.listdir(_path)
+                        if os.path.isdir(os.path.join(_path, i))):
+                    prefix = u'+ {0}'
+                else:
+                    prefix = u'- {0}'
+                catalogs.append(prefix.format(_catalog))
+
+        catalogs.sort(key=lambda x: x[PREFIX_LEN:])
+
+        if len(catalogs) > 1:
+            self.catalogs = catalogs
+            self.w_listbox_catalogs.delete(0, END)
+            self.w_listbox_catalogs.insert(
+                END, *self.catalogs)
 
     def select_listbox_catalogs(self, event):
         """
-        обработчик выбора каталога в списке каталогов
+        обработчик выбора каталога в списке каталогов, для проваливания внутрь
 
         :param event:
         :return:
@@ -157,4 +113,34 @@ class LeftFrame(BasePAFrame):
         except IndexError:
             return
         else:
-            self.w_frame_child.set_catalog(catalog)
+            if catalog.startswith(BACK_DIR_PATH):
+                self.set_catalog(
+                    os.path.dirname(self.current_catalog))
+            else:
+                self.set_catalog(
+                    os.path.join(self.current_catalog, catalog[PREFIX_LEN:]))
+
+    def select_listbox_catalog(self, event):
+        """
+        обработчик выбора каталога в списке каталогов, для просмотра картинок
+
+        :param event:
+        :return:
+        """
+        try:
+            index = self.w_listbox_catalogs.curselection()[0]
+            catalog = self.catalogs[index]
+        except IndexError:
+            return
+        else:
+            if catalog.startswith(BACK_DIR_PATH):
+                self.w_frame_child.set_catalog(self.current_catalog)
+            else:
+                self.w_frame_child.set_catalog(
+                    os.path.join(self.current_catalog, catalog[PREFIX_LEN:]))
+
+    def set_next_path(self):
+        """
+
+        :return:
+        """

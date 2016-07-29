@@ -23,6 +23,7 @@ class CenterFrame(BasePAFrame):
         BasePAFrame.__init__(self, *args, **kwargs)
 
         self.w_listbox_files = Listbox(self)
+
         self.catalog = None
         self.catalog_files = []
 
@@ -37,7 +38,7 @@ class CenterFrame(BasePAFrame):
 
         self.w_listbox_files.pack(fill=BOTH, side=TOP, expand=True)
 
-    def set_catalog(self, catalog):
+    def set_catalog(self, catalog=None):
         """
         задаем новый каталог для отображения
 
@@ -53,7 +54,7 @@ class CenterFrame(BasePAFrame):
         self.w_frame_child.set_file(None)
 
         if self.catalog is not None:
-            catalog_path = self.catalog['path']
+            catalog_path = self.catalog
 
             for file_name in os.listdir(catalog_path):
                 file_path = os.path.join(catalog_path, file_name)
@@ -68,6 +69,9 @@ class CenterFrame(BasePAFrame):
                 self.w_listbox_files.selection_set(
                     catalog_files.index(self.catalog['file_name']))
                 self.w_listbox_files.event_generate("<<ListboxSelect>>")
+
+    def update_catalog(self):
+        self.set_catalog(self.catalog)
 
     def select_listbox_file(self, event):
         """

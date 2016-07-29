@@ -5,9 +5,10 @@
 """
 
 from core.frame import BasePAFrame
-from photo.leftframe import LeftFrame
-from photo.center_frame import CenterFrame
-from photo.rightframe import RightFrame
+
+from .leftframe import LeftFrame
+from .center_frame import CenterFrame
+from .rightframe import RightFrame
 
 
 class PhotoFrame(BasePAFrame):
@@ -37,9 +38,10 @@ class PhotoFrame(BasePAFrame):
         self.w_left_frame_rel_width = 0.1
         self.w_left_frame_rel_height = 1
 
+        # фрейм со списокм фотографии
         self.w_center_frame_rel_x = self.w_left_frame_rel_width
         self.w_center_frame_rel_y = 0
-        self.w_center_frame_rel_width = 0.1
+        self.w_center_frame_rel_width = 0.15
         self.w_center_frame_rel_height = 1
 
         self.w_right_frame_rel_x = (
@@ -69,18 +71,10 @@ class PhotoFrame(BasePAFrame):
             relwidth=self.w_right_frame_rel_width,
             relheight=self.w_right_frame_rel_height)
 
-    def get_save_settings(self):
-        save_settings = BasePAFrame.get_save_settings(self)
-        save_settings.update(self.w_left_frame.get_save_settings())
-        return save_settings
+        self.w_left_frame.set_catalog()
 
-    def handle_update_files(self, new_catalog_path, new_file_name):
+    def handle_update_files(self):
         """
         обновить список файлов файлов
         """
-        self.w_center_frame.set_catalog(
-            {
-                'path': new_catalog_path,
-                'file_name': new_file_name
-            })
-
+        self.w_center_frame.update_catalog()

@@ -4,17 +4,14 @@
 приложение
 """
 
-from Tkinter import Tk, BOTH, TOP
-
-import yaml
-
-import settings
+from Tkinter import Tk
 
 from helpers import parsegeometry
+
 from navigation.frame import NavigationFrame
 from photo.frame import PhotoFrame
-from people.frame import PeopleFrame
-from settings import default_settings
+from settings.frame import SettingsFrame
+from settings.model import settings
 
 
 class App(object):
@@ -34,13 +31,14 @@ class App(object):
         # фрейм с фотографиями
         self.w_frame_photo = PhotoFrame(self.w_window)
 
-        # фрейм с людьми
-        self.w_frame_people = PeopleFrame(self.w_window)
+        # фрейм с настройками
+        self.w_frame_settings = SettingsFrame(self.w_window)
 
         # список фреймов, вкладок
         self.frames = (
             self.w_frame_photo,
-            self.w_frame_people)
+            self.w_frame_settings,
+        )
 
     def start(self):
         """
@@ -67,8 +65,9 @@ class App(object):
 
         self.w_frame_toolbar.add_button(
             text=u'Фотографии', command=self.click_photo_button)
-        # self.w_frame_toolbar.add_button(
-        #     text=u'Люди', command=self.click_people_button)
+
+        self.w_frame_toolbar.add_button(
+            text=u'Настройки', command=self.click_settings_button)
 
         # задаем размеры и положение фреймов
         # фрейм тулбара
@@ -76,6 +75,7 @@ class App(object):
         self.w_frame_toolbar_rel_y = 0
         self.w_frame_toolbar_rel_width = 1
         self.w_frame_toolbar_rel_height = 0.06
+
         # фрейм инструментов - фотографии, люди и т.б.
         self.w_frame_tools_rel_x = 0
         self.w_frame_tools_rel_y = self.w_frame_toolbar_rel_height
@@ -98,10 +98,6 @@ class App(object):
         сохраняем какие то настройки
         """
 
-        save_settings = {}
-        for frame in self.frames:
-            save_settings.update(frame.get_save_settings())
-
         width, height, x, y = parsegeometry(self.w_window.geometry())
 
         for attr, dattr in (
@@ -109,34 +105,42 @@ class App(object):
                 (height, 'MAIN_WINDOW_HEIGHT'),
                 (x, 'MAIN_WINDOW_X'),
                 (y, 'MAIN_WINDOW_Y'),
-            ):
-            if attr != getattr(default_settings, dattr):
-                save_settings[dattr] = attr
+        ):
+            setattr(settings, dattr, attr)
 
-        with open(settings.config_path, 'w') as stream:
-            yaml.dump(save_settings, stream, default_flow_style=False, indent=4)
+        settings.write()
 
         self.w_window.destroy()
+
+    def _forget_frames(self):
+        """
+        скрываем все фреймы
+        :return:
+        """
+        for frame in self.frames:
+            frame.place_forget()
 
     def click_photo_button(self):
         """
         обработчик отображения вкладки фотографии
         """
-        for frame in self.frames:
-            frame.pack_forget()
+        self._forget_frames()
         self.w_frame_photo.place(
             relx=self.w_frame_tools_rel_x,
             rely=self.w_frame_tools_rel_y,
             relwidth=self.w_frame_tools_rel_width,
             relheight=self.w_frame_tools_rel_height)
 
-    def click_people_button(self):
+    def click_settings_button(self):
         """
-        обработчик отображения вкладки людей
+        обработчик отображения вкладки настроек приложения
         """
-        for frame in self.frames:
-            frame.pack_forget()
-        self.w_frame_people.pack(fill=BOTH)
+        self._forget_frames()
+        self.w_frame_settings.place(
+            relx=self.w_frame_tools_rel_x,
+            rely=self.w_frame_tools_rel_y,
+            relwidth=self.w_frame_tools_rel_width,
+            relheight=self.w_frame_tools_rel_height)
 
 
 App().start()

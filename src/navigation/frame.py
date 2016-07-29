@@ -4,7 +4,7 @@
 панель навигации
 """
 
-from Tkinter import Button, LEFT
+from Tkinter import Button
 
 from core.frame import BasePAFrame
 
@@ -23,8 +23,10 @@ class NavigationFrame(BasePAFrame):
         BasePAFrame._pa_layout(self)
 
         relx = 0
+
         # ширина кнопки навигации
         relwidth = 0.13
+
         for button in self.buttons:
             button.place(relx=relx, rely=0, relwidth=relwidth, relheight=1)
             relx += relwidth
