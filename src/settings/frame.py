@@ -20,6 +20,31 @@ class SettingsFrame(BasePAFrame):
     def __init__(self, *args, **kwargs):
         BasePAFrame.__init__(self, *args, **kwargs)
 
+        self.w_base_path_frame = BasePathFrame(self)
+        self.w_about_frame = AboutFrame(self)
+
+    def _pa_layout(self):
+        w_base_path_height = 0.15
+        self.w_base_path_frame.place(
+            relx=0,
+            rely=0,
+            relwidth=1,
+            relheight=w_base_path_height)
+        self.w_about_frame.place(
+            relx=0,
+            rely=w_base_path_height,
+            relwidth=1,
+            relheight=1-w_base_path_height)
+
+
+class BasePathFrame(BasePAFrame):
+    """
+    фрейм для указания папки с фотографиями
+    """
+
+    def __init__(self, *args, **kwargs):
+        BasePAFrame.__init__(self, *args, **kwargs)
+
         self.w_label_base_path_label = Label(self, text=u'Папка с фотографиями')
         self.w_label_base_path = Label(self, text=settings.BASE_CATALOG)
 
@@ -27,9 +52,19 @@ class SettingsFrame(BasePAFrame):
             self, text=u'Изменить', command=self.click_button_select_base_path)
 
     def _pa_layout(self):
-        self.w_label_base_path_label.pack()
-        self.w_label_base_path.pack()
-        self.w_button_select_base_path.pack()
+        label_height = 0.25
+        self.w_label_base_path_label.place(
+            relx=0,
+            rely=0
+        )
+        self.w_label_base_path.place(
+            relx=0,
+            rely=label_height
+        )
+        self.w_button_select_base_path.place(
+            relx=0,
+            rely=label_height * 2
+        )
 
     def click_button_select_base_path(self):
         """
@@ -45,3 +80,33 @@ class SettingsFrame(BasePAFrame):
 
         self.w_label_base_path['text'] = path
         settings.BASE_CATALOG = path
+
+
+class AboutFrame(BasePAFrame):
+
+    about = u"""
+    О программе.
+
+    Версия: {}
+
+    Программа для работы с фотографиями.
+
+    Автор: Ильнур Гайфутдинов
+
+    Интернет страница автора: ilnurgi1.ru
+
+    Обратная связь: ilnurgi@mail.ru, ilnurgi87@gmail.com
+
+    Skype: ilnurgi_work
+    """.format(settings.VERSION_STR)
+
+    def __init__(self, *args, **kwargs):
+        BasePAFrame.__init__(self, *args, **kwargs)
+
+        self.w_label_base_path_label = Label(self, text=self.about)
+
+    def _pa_layout(self):
+        self.w_label_base_path_label.place(
+            relx=0,
+            rely=0
+        )

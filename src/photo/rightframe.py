@@ -8,9 +8,9 @@ from collections import OrderedDict
 import datetime
 import os
 
-from Tkinter import Label, Button, Entry
+from Tkinter import Label, Button, Entry, END
 from tkFileDialog import askdirectory
-from tkMessageBox import showerror
+from tkMessageBox import showerror, askyesno
 
 from PIL import Image, ImageTk
 from PIL.ExifTags import TAGS
@@ -18,7 +18,7 @@ from PIL.ExifTags import TAGS
 from core.frame import BasePAFrame
 from settings.model import settings
 
-date_format = u'%Y_%m_%d_%H_%M_%S'
+date_format = u'%Y-%m-%d %H-%M-%S'
 
 EXIF_TAGS = TAGS
 EXIF_TAGS_REVERSE = {v: k for k, v in TAGS.iteritems()}
@@ -44,14 +44,14 @@ LABELS = (
     TEXT_IMAGE_SIZE,
 )
 
-LABELS_RENAME = {
+LABELS_RENAME = (
     TEXT_DATE_CREATE,
     TEXT_DATE_MODIFY,
     TEXT_DATE_ACCESS,
     TEXT_EXIF_DATE_ORIGINAL,
     TEXT_EXIF_DATE_DIGITIZED,
     TEXT_EXIF_DATE_TIME,
-}
+)
 
 
 class ImageFrame(BasePAFrame):
@@ -220,13 +220,14 @@ class SettingsFrame(BasePAFrame):
         if not self.current_file:
             return
 
-        meta = event.widget.meta
-        if not meta:
-            return
-
         if event.widget == self.w_btn_rename_custom_name:
             data = self.w_entry_custom_name.get()
+            self.w_entry_custom_name.delete(0, END)
         else:
+            meta = event.widget.meta
+            if not meta:
+                return
+
             try:
                 date = datetime.datetime.strptime(
                     meta['data'], settings.DATE_TIME_FORMAT)
@@ -239,20 +240,21 @@ class SettingsFrame(BasePAFrame):
 
             data = date.strftime(date_format)
         new_file_name = (
-            u'{0}_{1}{2}'.format(
+            u'{0} {1}{2}'.format(
                 data,
                 self.current_file['size'],
                 os.path.splitext(self.current_file['file_path'])[-1]))
         new_file_dir = os.path.dirname(self.current_file['file_path'])
         new_file_path = os.path.join(new_file_dir, new_file_name)
-        if os.path.exists(new_file_path):
-            showerror(
-                u'Ошибка',
-                u'Файл ({0}) уже существует, переименовать невозможно'.format(
-                    new_file_path))
-        else:
-            os.rename(self.current_file['file_path'], new_file_path)
-            self.master.handle_update_files(new_file_dir, new_file_name)
+        if new_file_path != self.current_file['file_path']:
+            if os.path.exists(new_file_path):
+                showerror(
+                    u'Ошибка',
+                    u'Файл ({0}) уже существует, '
+                    u'переименовать невозможно'.format(new_file_path))
+            else:
+                os.rename(self.current_file['file_path'], new_file_path)
+                self.master.handle_update_files()
 
     def click_move_button(self, event):
         """
@@ -278,7 +280,14 @@ class SettingsFrame(BasePAFrame):
             self.master.handle_update_files()
 
     def click_remove_button(self, event):
-        print 'click_remove_button'
+        # error, info, question, or warning
+        if askyesno(
+                u'Удалить файл?',
+                self.current_file['file_path'],
+                icon='warning'):
+            os.remove(self.current_file['file_path'])
+            self.master.reset()
+            self.master.handle_update_files()
 
 
 class RightFrame(BasePAFrame):

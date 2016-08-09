@@ -32,6 +32,10 @@ class LeftFrame(BasePAFrame):
         self.current_catalog = settings.BASE_CATALOG
         self.catalogs = []
 
+        # текущий активный каталог, необходим для дабл клика,
+        # т.к. переходит фокус
+        self.current_catalog_clicked = None
+
     def _pa_configure(self):
         BasePAFrame._pa_configure(self)
 
@@ -107,18 +111,11 @@ class LeftFrame(BasePAFrame):
         :param event:
         :return:
         """
-        try:
-            index = self.w_listbox_catalogs.curselection()[0]
-            catalog = self.catalogs[index]
-        except IndexError:
-            return
+        if self.current_catalog_clicked == self.current_catalog:
+            self.set_catalog(os.path.dirname(self.current_catalog))
         else:
-            if catalog.startswith(BACK_DIR_PATH):
-                self.set_catalog(
-                    os.path.dirname(self.current_catalog))
-            else:
-                self.set_catalog(
-                    os.path.join(self.current_catalog, catalog[PREFIX_LEN:]))
+            self.set_catalog(
+                os.path.join(self.current_catalog_clicked))
 
     def select_listbox_catalog(self, event):
         """
@@ -135,12 +132,8 @@ class LeftFrame(BasePAFrame):
         else:
             if catalog.startswith(BACK_DIR_PATH):
                 self.w_frame_child.set_catalog(self.current_catalog)
+                self.current_catalog_clicked = self.current_catalog
             else:
-                self.w_frame_child.set_catalog(
-                    os.path.join(self.current_catalog, catalog[PREFIX_LEN:]))
-
-    def set_next_path(self):
-        """
-
-        :return:
-        """
+                path = os.path.join(self.current_catalog, catalog[PREFIX_LEN:])
+                self.w_frame_child.set_catalog(path)
+                self.current_catalog_clicked = path

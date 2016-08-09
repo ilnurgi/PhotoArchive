@@ -6,8 +6,7 @@
 
 import os
 
-from Tkinter import Listbox, BOTH, TOP, END
-
+from Tkinter import Listbox, BOTH, TOP, END, Scrollbar, RIGHT, LEFT, Y
 
 from core.frame import BasePAFrame
 
@@ -23,6 +22,7 @@ class CenterFrame(BasePAFrame):
         BasePAFrame.__init__(self, *args, **kwargs)
 
         self.w_listbox_files = Listbox(self)
+        self.w_scrollbar_files = Scrollbar(self)
 
         self.catalog = None
         self.catalog_files = []
@@ -30,13 +30,26 @@ class CenterFrame(BasePAFrame):
     def _pa_configure(self):
         BasePAFrame._pa_configure(self)
 
+        self.w_listbox_files.config(yscrollcommand=self.w_scrollbar_files.set)
+        self.w_scrollbar_files.config(command=self.w_listbox_files.yview)
+
         self.w_listbox_files.bind(
             '<<ListboxSelect>>', self.select_listbox_file)
 
     def _pa_layout(self):
         BasePAFrame._pa_layout(self)
 
-        self.w_listbox_files.pack(fill=BOTH, side=TOP, expand=True)
+        w_listbox_files_width = 0.95
+        self.w_listbox_files.place(
+            relx=0,
+            rely=0,
+            relwidth=w_listbox_files_width,
+            relheight=1)
+        self.w_scrollbar_files.place(
+            relx=w_listbox_files_width,
+            rely=0,
+            relwidth=1-w_listbox_files_width,
+            relheight=1)
 
     def set_catalog(self, catalog=None):
         """
@@ -48,6 +61,17 @@ class CenterFrame(BasePAFrame):
             }
         :return:
         """
+
+        try:
+            current_index = self.w_listbox_files.curselection()[0]
+        except IndexError:
+            current_index = 0
+
+        if 0 < current_index < len(self.catalog_files):
+            set_index = current_index + 1
+        else:
+            set_index = current_index
+
         self.catalog = catalog
         self.catalog_files = []
         self.w_listbox_files.delete(0, END)
@@ -65,10 +89,10 @@ class CenterFrame(BasePAFrame):
             self.catalog_files.sort(key=lambda x: x['name'])
             catalog_files = [catalog['name'] for catalog in self.catalog_files]
             self.w_listbox_files.insert(END, *catalog_files)
-            if 'file_name' in self.catalog:
-                self.w_listbox_files.selection_set(
-                    catalog_files.index(self.catalog['file_name']))
-                self.w_listbox_files.event_generate("<<ListboxSelect>>")
+
+            self.w_listbox_files.selection_set(set_index)
+            self.w_listbox_files.see(set_index)
+            self.w_listbox_files.event_generate("<<ListboxSelect>>")
 
     def update_catalog(self):
         self.set_catalog(self.catalog)

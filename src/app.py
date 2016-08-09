@@ -63,6 +63,8 @@ class App(object):
                 settings.MAIN_WINDOW_X,
                 settings.MAIN_WINDOW_Y))
 
+        self.w_window.title(u'Фотоальбом: {}'.format(settings.VERSION_STR))
+
         self.w_frame_toolbar.add_button(
             text=u'Фотографии', command=self.click_photo_button)
 
