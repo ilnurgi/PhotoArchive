@@ -67,7 +67,7 @@ class LeftFrame(BasePAFrame):
         :return:
         """
 
-        catalog = catalog or settings.BASE_CATALOG
+        catalog = catalog or self.current_catalog
 
         if not os.path.isdir(catalog):
             return

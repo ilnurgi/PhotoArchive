@@ -56,8 +56,8 @@ class SettingsModel(YamlSettingsMixin):
     DATE_TIME_FORMAT = u'%Y-%m-%d %H:%M:%S'
     DATE_TIME_FORMAT_EXIF = u'%Y:%m:%d %H:%M:%S'
 
-    VERSION = (16, 8, 9)
-    VERSION_STR = u'{}.{}.{}'.format(*VERSION)
+    VERSION = (0, 0, 1, 160809)
+    VERSION_STR = u'{}.{}.{}.{}'.format(*VERSION)
 
     SAVED_SETTINGS = (
         'MAIN_WINDOW_MIN_HEIGHT',
