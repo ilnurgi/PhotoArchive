@@ -10,6 +10,7 @@ from helpers import parsegeometry
 
 from navigation.frame import NavigationFrame
 from photo.frame import PhotoFrame
+from photo_finder.frame import PhotoFinderFrame
 from settings.frame import SettingsFrame
 from settings.model import settings
 
@@ -34,10 +35,14 @@ class App(object):
         # фрейм с настройками
         self.w_frame_settings = SettingsFrame(self.w_window)
 
+        # фрейм для поиска новых фотографии
+        self.w_frame_photo_finder = PhotoFinderFrame(self.w_window)
+
         # список фреймов, вкладок
         self.frames = (
             self.w_frame_photo,
             self.w_frame_settings,
+            self.w_frame_photo_finder,
         )
 
     def start(self):
@@ -70,6 +75,9 @@ class App(object):
 
         self.w_frame_toolbar.add_button(
             text=u'Настройки', command=self.click_settings_button)
+
+        self.w_frame_toolbar.add_button(
+            text=u'Поиск фотографии', command=self.click_photo_finder_button)
 
         # задаем размеры и положение фреймов
         # фрейм тулбара
@@ -139,6 +147,17 @@ class App(object):
         """
         self._forget_frames()
         self.w_frame_settings.place(
+            relx=self.w_frame_tools_rel_x,
+            rely=self.w_frame_tools_rel_y,
+            relwidth=self.w_frame_tools_rel_width,
+            relheight=self.w_frame_tools_rel_height)
+
+    def click_photo_finder_button(self):
+        """
+        обработчик клика поиска новых фотографии
+        """
+        self._forget_frames()
+        self.w_frame_photo_finder.place(
             relx=self.w_frame_tools_rel_x,
             rely=self.w_frame_tools_rel_y,
             relwidth=self.w_frame_tools_rel_width,

@@ -43,6 +43,7 @@ class SettingsModel(YamlSettingsMixin):
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
     BASE_CATALOG = BASE_DIR
+    PHOTO_FINDER_LAST_SIR = BASE_DIR
 
     MAIN_WINDOW_MIN_HEIGHT = 600
     MAIN_WINDOW_MIN_WIDTH = 800
@@ -56,7 +57,7 @@ class SettingsModel(YamlSettingsMixin):
     DATE_TIME_FORMAT = u'%Y-%m-%d %H:%M:%S'
     DATE_TIME_FORMAT_EXIF = u'%Y:%m:%d %H:%M:%S'
 
-    VERSION = (0, 0, 1, 160809)
+    VERSION = (0, 0, 2, 160809)
     VERSION_STR = u'{}.{}.{}.{}'.format(*VERSION)
 
     SAVED_SETTINGS = (
@@ -67,6 +68,7 @@ class SettingsModel(YamlSettingsMixin):
         'MAIN_WINDOW_X',
         'MAIN_WINDOW_Y',
         'BASE_CATALOG',
+        'PHOTO_FINDER_LAST_SIR',
     )
 
 
