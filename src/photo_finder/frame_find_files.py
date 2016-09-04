@@ -36,6 +36,9 @@ class FindFilesFrame(BasePAFrame):
         self.w_listbox_files.bind(
             '<<ListboxSelect>>', self.select_listbox_files)
 
+        self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
+        self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
+
     def _pa_layout(self):
         w_button_relwidth = 0.15
         w_button_relheight = 0.2
@@ -75,8 +78,7 @@ class FindFilesFrame(BasePAFrame):
         self.w_image_frame.reset()
 
         try:
-            index = self.w_listbox_files.curselection()[0]
-            image_path = self.listbox_items[index]
+            image_path = self.w_listbox_files.selection_get()
         except IndexError:
             return
         if os.path.exists(image_path):
@@ -129,22 +131,26 @@ class FindFilesFrame(BasePAFrame):
         new_files, new_dubl_files = self._get_new_files(
             settings.PHOTO_FINDER_LAST_SIR, settings.BASE_CATALOG)
 
-        self.listbox_items = [
+        settings.PHOTO_FINDER_LAST_NEW_FILES = [
             u'Совершенно новые файлы',
             u''
         ]
-        self.listbox_items.extend(new_files)
-        self.listbox_items.extend((
+        settings.PHOTO_FINDER_LAST_NEW_FILES.extend(new_files)
+
+        settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS = [
             u"",
             u"",
             u"Вроде дубликаты",
             u""
-        ))
-        [(self.listbox_items.extend(item['src_files']),
-          self.listbox_items.extend(item['dst_files']),
-          self.listbox_items.append(u''))
-         for item in new_dubl_files]
-        self.w_listbox_files.insert(END, *self.listbox_items)
+        ]
+        settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.extend(
+            [(self.listbox_items.extend(item['src_files']),
+              self.listbox_items.extend(item['dst_files']),
+              self.listbox_items.append(u''))
+             for item in new_dubl_files])
+        
+        self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
+        self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
 
     def _get_new_files(self, src, dst, use_hash=False):
         """
@@ -175,7 +181,15 @@ class FindFilesFrame(BasePAFrame):
         for root, dirs, files in os.walk(src):
             for f in files:
                 path = os.path.join(root, f)
-                src_map.setdefault(os.stat(path).st_size, []).append(path)
+                if f in (u'печать фото ', ):
+                    continue
+                try:
+                    src_map.setdefault(os.stat(path).st_size, []).append(path)
+                except Exception as err:
+                    print path
+                    print u'({0})'.format(f)
+                    print os.path.isdir(path)
+                    raise err
 
         self.w_text_debugger.insert(
             END,
@@ -188,12 +202,21 @@ class FindFilesFrame(BasePAFrame):
         # новые файлы,
         # которые совпали по размеру и имени но не совпали по хешу
         new_dubl_files = []
-
+        counter = 0
+        count_src = len(src_map.keys()) 
+        step = count_src / 10
+        print count_src, step
         for size, photos in src_map.iteritems():
+            counter += 1
+            if counter % step == 0:
+                print counter, 
+                self.w_text_debugger.insert(
+                    END,
+                    u"{}0%, ".format(counter/step))
             if size not in dst_map:
                 # у нас нету файла с таким размером, значит он новый
                 new_files.extend(photos)
-            else:
+            elif False:
                 dst_photos = dst_map[size]
                 # у нас есть файлы такого размера
                 # сравним их названия
@@ -208,12 +231,26 @@ class FindFilesFrame(BasePAFrame):
                         for dst_photo in dst_photos:
                             with open(dst_photo, "rb") as f:
                                 hasher = hashlib.md5()
-                                hasher.update(f.read())
+                                buf = f.read(65536)
+                                while buf:
+                                    try:
+                                        hasher.update(buf)
+                                    except Exception as err:
+                                        print dst_photo
+                                        raise err
+                                    buf = f.read(65536)
                                 hashs.append(hasher.hexdigest())
                         for src_photo in photos:
                             with open(src_photo, "rb") as f:
                                 hasher = hashlib.md5()
-                                hasher.update(f.read())
+                                buf = f.read(65536)
+                                while buf:
+                                    try:
+                                        hasher.update(buf)
+                                    except Exception as err:
+                                        print src_photo
+                                        raise err
+                                    buf = f.read(65536)
                                 if hasher.hexdigest() not in hashs:
                                     new_dubl_files.append({
                                         "src_files": photos,
@@ -228,6 +265,7 @@ class FindFilesFrame(BasePAFrame):
             END,
             u"Найдено новых файлов: {}\n".format(len(new_dubl_files)))
 
+        new_files.sort()
         return new_files, new_dubl_files
 
 

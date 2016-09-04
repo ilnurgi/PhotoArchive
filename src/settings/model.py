@@ -43,7 +43,10 @@ class SettingsModel(YamlSettingsMixin):
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
     BASE_CATALOG = BASE_DIR
+    
     PHOTO_FINDER_LAST_SIR = BASE_DIR
+    PHOTO_FINDER_LAST_NEW_FILES = []
+    PHOTO_FINDER_LAST_NEW_FILES_DUBLS = []
 
     MAIN_WINDOW_MIN_HEIGHT = 600
     MAIN_WINDOW_MIN_WIDTH = 800
@@ -69,6 +72,8 @@ class SettingsModel(YamlSettingsMixin):
         'MAIN_WINDOW_Y',
         'BASE_CATALOG',
         'PHOTO_FINDER_LAST_SIR',
+        'PHOTO_FINDER_LAST_NEW_FILES',
+        'PHOTO_FINDER_LAST_NEW_FILES_DUBLS',
     )
 
 
