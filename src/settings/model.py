@@ -44,7 +44,7 @@ class SettingsModel(YamlSettingsMixin):
 
     BASE_CATALOG = BASE_DIR
     
-    PHOTO_FINDER_LAST_SIR = BASE_DIR
+    PHOTO_FINDER_LAST_DIR = BASE_DIR
     PHOTO_FINDER_LAST_NEW_FILES = []
     PHOTO_FINDER_LAST_NEW_FILES_DUBLS = []
 
@@ -60,7 +60,7 @@ class SettingsModel(YamlSettingsMixin):
     DATE_TIME_FORMAT = u'%Y-%m-%d %H:%M:%S'
     DATE_TIME_FORMAT_EXIF = u'%Y:%m:%d %H:%M:%S'
 
-    VERSION = (0, 0, 2, 160809)
+    VERSION = (0, 0, 3, 160905)
     VERSION_STR = u'{}.{}.{}.{}'.format(*VERSION)
 
     SAVED_SETTINGS = (

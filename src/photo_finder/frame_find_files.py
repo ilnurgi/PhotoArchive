@@ -4,7 +4,7 @@ import hashlib
 import os
 from threading import Thread
 
-from Tkinter import Button, Listbox, END, Text, Label, EXTENDED, TclError
+import Tkinter
 from tkFileDialog import askdirectory
 
 from PIL import ImageTk, Image
@@ -21,13 +21,15 @@ class FindFilesFrame(BasePAFrame):
     def __init__(self, *args, **kwargs):
         BasePAFrame.__init__(self, *args, **kwargs)
 
-        self.w_button_select_base_path = Button(
+        self.w_button_select_base_path = Tkinter.Button(
             self, text=u'Поиск', command=self.click_button_find)
-        self.w_button_move = Button(
+        self.w_button_move = Tkinter.Button(
             self, text=u'Переместить', command=self.click_button_move)
 
-        self.w_listbox_files = Listbox(self, selectmode=EXTENDED)
-        self.w_text_debugger = Text(self)
+        self.w_listbox_files = Tkinter.Listbox(
+            self,
+            selectmode=Tkinter.EXTENDED)
+        self.w_text_debugger = Tkinter.Text(self)
         self.w_image_frame = ImageFrame(self)
 
         self.last_move_path = settings.BASE_CATALOG
@@ -36,8 +38,10 @@ class FindFilesFrame(BasePAFrame):
         self.w_listbox_files.bind(
             '<<ListboxSelect>>', self.select_listbox_files)
 
-        self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
-        self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
+        self.w_listbox_files.insert(
+            Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
+        self.w_listbox_files.insert(
+            Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
 
     def _pa_layout(self):
         w_button_relwidth = 0.15
@@ -79,7 +83,7 @@ class FindFilesFrame(BasePAFrame):
 
         try:
             image_path = self.w_listbox_files.selection_get()
-        except (IndexError, TclError):
+        except (IndexError, Tkinter.TclError):
             return
         if os.path.exists(image_path):
             try:
@@ -117,8 +121,8 @@ class FindFilesFrame(BasePAFrame):
         """
         обработчик кнопки старта поиска фотграфии
         """
-        self.w_listbox_files.delete(0, END)
-        self.w_text_debugger.delete(1.0, END)
+        self.w_listbox_files.delete(0, Tkinter.END)
+        self.w_text_debugger.delete(1.0, Tkinter.END)
         self.w_image_frame.reset()
 
         thread = Thread(target=self._find_new_fils)
@@ -144,13 +148,17 @@ class FindFilesFrame(BasePAFrame):
             u""
         ]
         [(            
-            settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.extend(item['dst_files']),
-            settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.extend(item['src_files']),
+            settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.extend(
+                item['dst_files']),
+            settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.extend(
+                item['src_files']),
             settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.append(u''))
             for item in new_dubl_files]
         
-        self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
-        self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
+        self.w_listbox_files.insert(
+            Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
+        self.w_listbox_files.insert(
+            Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
 
     def _get_new_files(self, src, dst, use_hash=False):
         """
@@ -163,7 +171,7 @@ class FindFilesFrame(BasePAFrame):
         если размер и название совпадают то файлы считаются одинаковыми
         """
 
-        self.w_text_debugger.insert(END, u"Ищем новые фотографии\n")
+        self.w_text_debugger.insert(Tkinter.END, u"Ищем новые фотографии\n")
         # собираем данные по файлам которые у нас уже есть
         dst_map = {}
         for root, dirs, files in os.walk(dst):
@@ -172,7 +180,7 @@ class FindFilesFrame(BasePAFrame):
                 dst_map.setdefault(os.stat(path).st_size, []).append(path)
 
         self.w_text_debugger.insert(
-            END,
+            Tkinter.END,
             u"Количесвто файлов нашего архива: {}\n".format(
                 sum(len(i) for i in dst_map.itervalues())))
 
@@ -183,16 +191,12 @@ class FindFilesFrame(BasePAFrame):
                 path = os.path.join(root, f)
                 if f in (u'печать фото ', ):
                     continue
-                try:
-                    src_map.setdefault(os.stat(path).st_size, []).append(path)
-                except Exception as err:
-                    print path
-                    print u'({0})'.format(f)
-                    print os.path.isdir(path)
-                    raise err
+
+                # FIXME: тут может возникнуть ошибка с файлами в винде
+                src_map.setdefault(os.stat(path).st_size, []).append(path)
 
         self.w_text_debugger.insert(
-            END,
+            Tkinter.END,
             u"Количесвто файлов стороннего архива: {}\n".format(
                 sum(len(i) for i in src_map.itervalues())))
 
@@ -204,14 +208,12 @@ class FindFilesFrame(BasePAFrame):
         new_dubl_files = []
         counter = 0
         count_src = len(src_map.keys()) 
-        step = count_src / 10
-        print count_src, step
+        step = count_src / 10 or 1
         for size, photos in src_map.iteritems():
             counter += 1
             if counter % step == 0:
-                print counter, 
                 self.w_text_debugger.insert(
-                    END,
+                    Tkinter.END,
                     u"{}0%, ".format(counter/step))
             if size not in dst_map:
                 # у нас нету файла с таким размером, значит он новый
@@ -233,11 +235,7 @@ class FindFilesFrame(BasePAFrame):
                                 hasher = hashlib.md5()
                                 buf = f.read(65536)
                                 while buf:
-                                    try:
-                                        hasher.update(buf)
-                                    except Exception as err:
-                                        print dst_photo
-                                        raise err
+                                    hasher.update(buf)
                                     buf = f.read(65536)
                                 hashs.append(hasher.hexdigest())
                         for src_photo in photos:
@@ -245,11 +243,7 @@ class FindFilesFrame(BasePAFrame):
                                 hasher = hashlib.md5()
                                 buf = f.read(65536)
                                 while buf:
-                                    try:
-                                        hasher.update(buf)
-                                    except Exception as err:
-                                        print src_photo
-                                        raise err
+                                    hasher.update(buf)
                                     buf = f.read(65536)
                                 if hasher.hexdigest() not in hashs:
                                     new_dubl_files.append({
@@ -259,11 +253,11 @@ class FindFilesFrame(BasePAFrame):
                                     break
 
         self.w_text_debugger.insert(
-            END,
+            Tkinter.END,
             u"\nНайдено совсем новых файлов: {}\n".format(len(new_files)))
 
         self.w_text_debugger.insert(
-            END,
+            Tkinter.END,
             u"Найдено новых файлов: {}\n".format(len(new_dubl_files)))
 
         new_files.sort()
@@ -279,7 +273,7 @@ class ImageFrame(BasePAFrame):
     def __init__(self, *args, **kwargs):
         BasePAFrame.__init__(self, *args, **kwargs)
 
-        self.image_label = Label(self)
+        self.image_label = Tkinter.Label(self)
 
     def _pa_layout(self):
         self.image_label.pack()
