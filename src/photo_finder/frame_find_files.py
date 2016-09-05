@@ -4,7 +4,7 @@ import hashlib
 import os
 from threading import Thread
 
-from Tkinter import Button, Listbox, END, Text, Label
+from Tkinter import Button, Listbox, END, Text, Label, EXTENDED, TclError
 from tkFileDialog import askdirectory
 
 from PIL import ImageTk, Image
@@ -26,7 +26,7 @@ class FindFilesFrame(BasePAFrame):
         self.w_button_move = Button(
             self, text=u'Переместить', command=self.click_button_move)
 
-        self.w_listbox_files = Listbox(self)
+        self.w_listbox_files = Listbox(self, selectmode=EXTENDED)
         self.w_text_debugger = Text(self)
         self.w_image_frame = ImageFrame(self)
 
@@ -79,7 +79,7 @@ class FindFilesFrame(BasePAFrame):
 
         try:
             image_path = self.w_listbox_files.selection_get()
-        except IndexError:
+        except (IndexError, TclError):
             return
         if os.path.exists(image_path):
             try:
@@ -96,12 +96,10 @@ class FindFilesFrame(BasePAFrame):
         обработчик кнопки переноса
         """
         try:
-            index = self.w_listbox_files.curselection()[0]
-            image_path = self.listbox_items[index]
+            image_paths = self.w_listbox_files.selection_get()
         except IndexError:
             return
-
-        if os.path.exists(image_path):
+        if image_paths:        
             path = askdirectory(
                 title=u'Выберите папку для перемещения',
                 initialdir=self.last_move_path)
@@ -110,8 +108,10 @@ class FindFilesFrame(BasePAFrame):
 
             self.last_move_path = path
 
-            dst = os.path.join(path, os.path.basename(image_path))
-            os.rename(image_path, dst)
+            for image_path in image_paths.splitlines():
+                if os.path.exists(image_path):
+                    dst = os.path.join(path, os.path.basename(image_path))
+                    os.rename(image_path, dst)
 
     def click_button_find(self):
         """
@@ -143,11 +143,11 @@ class FindFilesFrame(BasePAFrame):
             u"Вроде дубликаты",
             u""
         ]
-        settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.extend(
-            [(self.listbox_items.extend(item['src_files']),
-              self.listbox_items.extend(item['dst_files']),
-              self.listbox_items.append(u''))
-             for item in new_dubl_files])
+        [(            
+            settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.extend(item['dst_files']),
+            settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.extend(item['src_files']),
+            settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS.append(u''))
+            for item in new_dubl_files]
         
         self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
         self.w_listbox_files.insert(END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
@@ -216,7 +216,7 @@ class FindFilesFrame(BasePAFrame):
             if size not in dst_map:
                 # у нас нету файла с таким размером, значит он новый
                 new_files.extend(photos)
-            elif False:
+            else:
                 dst_photos = dst_map[size]
                 # у нас есть файлы такого размера
                 # сравним их названия
@@ -254,18 +254,20 @@ class FindFilesFrame(BasePAFrame):
                                 if hasher.hexdigest() not in hashs:
                                     new_dubl_files.append({
                                         "src_files": photos,
-                                        "dst_files": photos,
+                                        "dst_files": dst_photos,
                                     })
+                                    break
 
         self.w_text_debugger.insert(
             END,
-            u"Найдено совсем новых файлов: {}\n".format(len(new_files)))
+            u"\nНайдено совсем новых файлов: {}\n".format(len(new_files)))
 
         self.w_text_debugger.insert(
             END,
             u"Найдено новых файлов: {}\n".format(len(new_dubl_files)))
 
         new_files.sort()
+        new_dubl_files.sort(key=lambda x: x['dst_files'])
         return new_files, new_dubl_files
 
 
