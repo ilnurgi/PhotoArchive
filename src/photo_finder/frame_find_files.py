@@ -52,12 +52,12 @@ class FindFilesFrame(BasePAFrame):
         self.w_listbox_files.insert(
             Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
 
-        self.w_listbox_scroll.config(command=self.w_listbox_files.xview)
-        self.w_listbox_files.config(xscrollcommand=self.w_listbox_scroll.set)
+        self.w_listbox_scroll.config(command=self.w_listbox_files.yview)
+        self.w_listbox_files.config(yscrollcommand=self.w_listbox_scroll.set)
 
-        self.w_text_debugger_scroll.config(command=self.w_text_debugger.xview)
+        self.w_text_debugger_scroll.config(command=self.w_text_debugger.yview)
         self.w_text_debugger.config(
-            xscrollcommand=self.w_text_debugger_scroll.set)
+            yscrollcommand=self.w_text_debugger_scroll.set)
 
     def _pa_layout(self):
         w_button_relwidth = 0.15
@@ -162,7 +162,11 @@ class FindFilesFrame(BasePAFrame):
             for image_path in image_paths.splitlines():
                 if os.path.exists(image_path):
                     dst = os.path.join(path, os.path.basename(image_path))
-                    os.rename(image_path, dst)
+                    try:
+                        os.rename(image_path, dst)
+                    except IOError:
+                        print u'ERROR: ({}) ->({})'.format(image_path, dst)
+                        break
 
     def click_button_find(self):
         """

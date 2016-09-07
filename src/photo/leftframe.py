@@ -87,7 +87,8 @@ class LeftFrame(BasePAFrame):
 
         for _catalog in os.listdir(catalog):
             _path = os.path.join(catalog, _catalog)
-            if os.path.isdir(_path):
+            if (os.path.isdir(_path) and
+                    u'system volume information' not in _path.lower()):
                 if any(
                         i for i in os.listdir(_path)
                         if os.path.isdir(os.path.join(_path, i))):
