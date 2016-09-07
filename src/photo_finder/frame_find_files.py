@@ -162,6 +162,9 @@ class FindFilesFrame(BasePAFrame):
             for image_path in image_paths.splitlines():
                 if os.path.exists(image_path):
                     dst = os.path.join(path, os.path.basename(image_path))
+                    while os.path.exists(dst):
+                        p, e = dst.rsplit(".", 1)
+                        dst = dst.replcae(u"."+e, u"1."+e)
                     try:
                         os.rename(image_path, dst)
                     except IOError:
