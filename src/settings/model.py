@@ -18,6 +18,9 @@ class YamlSettingsMixin(object):
         self.load()
 
     def load(self):
+        if not os.path.exists(self.config_path):
+            return
+
         with open(self.config_path) as stream:
             config = yaml.load(stream)
             if config:
