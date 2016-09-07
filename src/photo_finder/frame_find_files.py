@@ -27,14 +27,19 @@ class FindFilesFrame(BasePAFrame):
             self, text=u'Переместить', command=self.click_button_move)
 
         self.w_listbox_files = Tkinter.Listbox(
-            self,
-            selectmode=Tkinter.EXTENDED)
+            self, selectmode=Tkinter.EXTENDED)
         self.w_listbox_scroll = Tkinter.Scrollbar(self)
 
         self.w_text_debugger = Tkinter.Text(self)
         self.w_text_debugger_scroll = Tkinter.Scrollbar(self)
 
         self.w_image_frame = ImageFrame(self)
+
+        self.w_checkbutton_only_size_variable = Tkinter.BooleanVar()
+        self.w_checkbutton_only_size = Tkinter.Checkbutton(
+            self,
+            text=u'Только по размеру',
+            variable=self.w_checkbutton_only_size_variable)
 
         self.last_move_path = settings.BASE_CATALOG
 
@@ -57,10 +62,16 @@ class FindFilesFrame(BasePAFrame):
     def _pa_layout(self):
         w_button_relwidth = 0.15
         w_button_relheight = 0.1
+        w_check_relx = w_button_relwidth
+        w_check_relwidth = 0.2
+        w_check_relheight = 0.1
         w_text_debugger_scroll_width = 0.01
+        w_text_debugger_x = w_button_relwidth + w_check_relwidth
         w_text_debugger_width = (
-            1 - w_button_relwidth - w_text_debugger_scroll_width)
-        w_text_debugger_scroll_x = w_button_relwidth + w_text_debugger_width
+            1 - w_button_relwidth - w_text_debugger_scroll_width -
+            w_check_relwidth)
+        w_text_debugger_scroll_x = (
+            w_button_relwidth + w_text_debugger_width + w_check_relwidth)
         w_text_debugger_height = w_button_relheight * 2
         w_listbox_files_height = 1 - w_text_debugger_height
         w_listbox_files_width = 0.49
@@ -77,8 +88,14 @@ class FindFilesFrame(BasePAFrame):
             relheight=w_button_relheight,
             relwidth=w_button_relwidth,
         )
+        self.w_checkbutton_only_size.place(
+            relx=w_check_relx,
+            rely=0,
+            relwidth=w_check_relwidth,
+            relheight=w_check_relheight,
+        )
         self.w_text_debugger.place(
-            relx=w_button_relwidth,
+            relx=w_text_debugger_x,
             rely=0,
             relwidth=w_text_debugger_width,
             relheight=w_text_debugger_height,
@@ -131,7 +148,7 @@ class FindFilesFrame(BasePAFrame):
         """
         try:
             image_paths = self.w_listbox_files.selection_get()
-        except IndexError:
+        except (IndexError, Tkinter.TclError):
             return
         if image_paths:        
             path = askdirectory(
@@ -248,7 +265,7 @@ class FindFilesFrame(BasePAFrame):
             if size not in dst_map:
                 # у нас нету файла с таким размером, значит он новый
                 new_files.extend(photos)
-            else:
+            elif not self.w_checkbutton_only_size_variable.get():
                 dst_photos = dst_map[size]
                 # у нас есть файлы такого размера
                 # сравним их названия
