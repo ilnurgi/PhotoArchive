@@ -21,7 +21,7 @@ class FindFilesFrame(BasePAFrame):
     def __init__(self, *args, **kwargs):
         BasePAFrame.__init__(self, *args, **kwargs)
 
-        self.w_button_select_base_path = Tkinter.Button(
+        self.w_button_find_start = Tkinter.Button(
             self, text=u'Поиск', command=self.click_button_find)
         self.w_button_move = Tkinter.Button(
             self, text=u'Переместить', command=self.click_button_move)
@@ -29,7 +29,11 @@ class FindFilesFrame(BasePAFrame):
         self.w_listbox_files = Tkinter.Listbox(
             self,
             selectmode=Tkinter.EXTENDED)
+        self.w_listbox_scroll = Tkinter.Scrollbar(self)
+
         self.w_text_debugger = Tkinter.Text(self)
+        self.w_text_debugger_scroll = Tkinter.Scrollbar(self)
+
         self.w_image_frame = ImageFrame(self)
 
         self.last_move_path = settings.BASE_CATALOG
@@ -43,38 +47,64 @@ class FindFilesFrame(BasePAFrame):
         self.w_listbox_files.insert(
             Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
 
+        self.w_listbox_scroll.config(command=self.w_listbox_files.xview)
+        self.w_listbox_files.config(xscrollcommand=self.w_listbox_scroll.set)
+
+        self.w_text_debugger_scroll.config(command=self.w_text_debugger.xview)
+        self.w_text_debugger.config(
+            xscrollcommand=self.w_text_debugger_scroll.set)
+
     def _pa_layout(self):
         w_button_relwidth = 0.15
-        w_button_relheight = 0.2
+        w_button_relheight = 0.1
+        w_text_debugger_scroll_width = 0.01
+        w_text_debugger_width = (
+            1 - w_button_relwidth - w_text_debugger_scroll_width)
+        w_text_debugger_scroll_x = w_button_relwidth + w_text_debugger_width
+        w_text_debugger_height = w_button_relheight * 2
+        w_listbox_files_height = 1 - w_text_debugger_height
+        w_listbox_files_width = 0.49
 
-        self.w_button_select_base_path.place(
+        self.w_button_find_start.place(
             relx=0,
             rely=0,
             relheight=w_button_relheight,
             relwidth=w_button_relwidth,
         )
         self.w_button_move.place(
-            relx=w_button_relwidth,
-            rely=0,
+            relx=0,
+            rely=w_button_relheight,
             relheight=w_button_relheight,
             relwidth=w_button_relwidth,
         )
         self.w_text_debugger.place(
-            relx=w_button_relwidth*2,
+            relx=w_button_relwidth,
             rely=0,
-            relwidth=1-w_button_relwidth*2,
-            relheight=w_button_relheight,
+            relwidth=w_text_debugger_width,
+            relheight=w_text_debugger_height,
+        )
+        self.w_text_debugger_scroll.place(
+            relx=w_text_debugger_scroll_x,
+            rely=0,
+            relwidth=w_text_debugger_scroll_width,
+            relheight=w_text_debugger_height,
         )
         self.w_listbox_files.place(
             relx=0,
-            rely=w_button_relheight,
-            relheight=1-w_button_relheight,
-            relwidth=0.5
+            rely=w_text_debugger_height,
+            relheight=w_listbox_files_height,
+            relwidth=w_listbox_files_width
+        )
+        self.w_listbox_scroll.place(
+            relx=w_listbox_files_width,
+            rely=w_text_debugger_height,
+            relheight=w_listbox_files_height,
+            relwidth=0.01
         )
         self.w_image_frame.place(
             relx=0.5,
-            rely=w_button_relheight,
-            relheight=1 - w_button_relheight,
+            rely=w_text_debugger_height,
+            relheight=w_listbox_files_height,
             relwidth=0.5
         )
 
