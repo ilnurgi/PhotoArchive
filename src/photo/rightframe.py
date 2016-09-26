@@ -7,16 +7,21 @@
 from collections import OrderedDict
 import datetime
 import os
+import platform
 
 from Tkinter import Label, Button, Entry, END
 from tkFileDialog import askdirectory
 from tkMessageBox import showerror, askyesno
+
+import vlc
 
 from PIL import Image, ImageTk
 from PIL.ExifTags import TAGS
 
 from core.frame import BasePAFrame
 from settings.model import settings
+
+AVAILABLE_VIDEO_FRMTS = ('.avi', '.mp4', '.AVI')
 
 date_format = u'%Y-%m-%d %H-%M-%S'
 
@@ -54,7 +59,7 @@ LABELS_RENAME = (
 )
 
 
-class ImageFrame(BasePAFrame):
+class ViewMediaFrame(BasePAFrame):
     """
     фрейм с картинкой
     """
@@ -62,10 +67,15 @@ class ImageFrame(BasePAFrame):
     def __init__(self, *args, **kwargs):
         BasePAFrame.__init__(self, *args, **kwargs)
 
-        self.image_label = Label(self)
+        self.vlc_instance = vlc.Instance()
+        self.vlc_player = self.vlc_instance.media_player_new()
+
+        self.platform = platform.system().lower()
+
+        self.media_label = Label(self)
 
     def _pa_layout(self):
-        self.image_label.pack()
+        self.media_label.pack()
 
     def set_image(self, image, width, height):
         if not image:
@@ -81,12 +91,24 @@ class ImageFrame(BasePAFrame):
             height = int(image_height * percent)
         photo_image = ImageTk.PhotoImage(
             image.resize((width, height), Image.ANTIALIAS))
-        self.image_label.config(image=photo_image)
-        self.image_label.image = photo_image
+        self.media_label.config(image=photo_image)
+        self.media_label.image = photo_image
+
+    def set_video(self, video_path):
+        """
+        проигрывает указанное видео
+        """
+        self.vlc_player.set_media(
+            self.vlc_instance.media_new(video_path))
+        if self.platform == 'windows':
+            self.vlc_player.set_hwnd(self.media_label.winfo_id())
+        else:
+            self.vlc_player.set_xwindow(self.media_label.winfo_id())
+        self.vlc_player.play()
 
     def reset(self):
-        self.image_label.config(image=None)
-        self.image_label.image = None
+        self.media_label.config(image=None)
+        self.media_label.image = None
 
 
 class SettingsFrame(BasePAFrame):
@@ -300,7 +322,7 @@ class RightFrame(BasePAFrame):
     def __init__(self, *args, **kwargs):
         BasePAFrame.__init__(self, *args, **kwargs)
 
-        self.w_image_frame = ImageFrame(self)
+        self.w_view_frame = ViewMediaFrame(self)
         self.w_settings_frame = SettingsFrame(self)
 
         self.w_image_frame_rel_x = 0
@@ -314,7 +336,7 @@ class RightFrame(BasePAFrame):
         self.w_settings_frame_rel_height = 1 - self.w_settings_frame_rel_y
 
     def _pa_layout(self):
-        self.w_image_frame.place(
+        self.w_view_frame.place(
             relx=self.w_image_frame_rel_x,
             rely=self.w_image_frame_rel_y,
             relwidth=self.w_image_frame_rel_width,
@@ -332,20 +354,26 @@ class RightFrame(BasePAFrame):
         :return:
         """
         if fl:
+            image = video = None
             try:
                 image = Image.open(fl['path'])
             except IOError:
-                image = None
-            self.w_image_frame.set_image(
-                image,
-                self.w_image_frame.winfo_width(),
-                self.w_image_frame.winfo_height())
+                if any(fl['path'].endswith(i) for i in AVAILABLE_VIDEO_FRMTS):
+                    video = fl['path']
+
+            if video:
+                self.w_view_frame.set_video(video)
+            else:
+                self.w_view_frame.set_image(
+                    image,
+                    self.w_view_frame.winfo_width(),
+                    self.w_view_frame.winfo_height())
             self.w_settings_frame.set_file(fl['path'], image)
         else:
             self.reset()
 
     def reset(self):
-        self.w_image_frame.reset()
+        self.w_view_frame.reset()
         self.w_settings_frame.reset()
 
     def handle_update_files(self):

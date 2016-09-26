@@ -63,7 +63,7 @@ class SettingsModel(YamlSettingsMixin):
     DATE_TIME_FORMAT = u'%Y-%m-%d %H:%M:%S'
     DATE_TIME_FORMAT_EXIF = u'%Y:%m:%d %H:%M:%S'
 
-    VERSION = (0, 0, 3, 160907)
+    VERSION = (0, 0, 4, 160926)
     VERSION_STR = u'{}.{}.{}.{}'.format(*VERSION)
 
     SAVED_SETTINGS = (
