@@ -8,6 +8,7 @@ from collections import OrderedDict
 import datetime
 import os
 import platform
+import re
 
 from Tkinter import Label, Button, Entry, END
 from tkFileDialog import askdirectory
@@ -21,7 +22,7 @@ from PIL.ExifTags import TAGS
 from core.frame import BasePAFrame
 from settings.model import settings
 
-AVAILABLE_VIDEO_FRMTS = ('.avi', '.mp4', '.AVI')
+AVAILABLE_VIDEO_FRMTS = ('.avi', '.mp4', '.AVI', '.3gpp', '.3gp')
 
 date_format = u'%Y-%m-%d %H-%M-%S'
 
@@ -104,7 +105,7 @@ class ViewMediaFrame(BasePAFrame):
             self.vlc_player.set_hwnd(self.media_label.winfo_id())
         else:
             self.vlc_player.set_xwindow(self.media_label.winfo_id())
-        self.vlc_player.play()
+        # self.vlc_player.play()
 
     def reset(self):
         self.media_label.config(image=None)
@@ -244,7 +245,15 @@ class SettingsFrame(BasePAFrame):
 
         if event.widget == self.w_btn_rename_custom_name:
             data = self.w_entry_custom_name.get()
-            self.w_entry_custom_name.delete(0, END)
+
+            re_suffix = "re"
+            if data.startswith(re_suffix):
+                _, re_template, replacer = data.split("|")
+                file_name = os.path.basename(self.current_file['file_path'])
+                finds = re.findall(re_template, file_name)[0]
+                data = replacer.format(*finds)
+            else:
+                self.w_entry_custom_name.delete(0, END)
         else:
             meta = event.widget.meta
             if not meta:

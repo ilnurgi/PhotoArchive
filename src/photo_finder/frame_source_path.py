@@ -19,7 +19,7 @@ class SourcePathFrame(BasePAFrame):
         self.w_label_source_path_label = Label(
             self, text=u'Папка источник с фотографиями ')
         self.w_label_base_path = Label(
-            self, text=settings.PHOTO_FINDER_LAST_SIR)
+            self, text=settings.PHOTO_FINDER_LAST_DIR)
 
         self.w_button_select_base_path = Button(
             self, text=u'Изменить', command=self.click_button_select_base_path)

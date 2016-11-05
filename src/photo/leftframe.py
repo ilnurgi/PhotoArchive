@@ -99,7 +99,7 @@ class LeftFrame(BasePAFrame):
 
         catalogs.sort(key=lambda x: x[PREFIX_LEN:])
 
-        if len(catalogs) > 1:
+        if catalog == settings.BASE_CATALOG or len(catalogs) > 1:
             self.catalogs = catalogs
             self.w_listbox_catalogs.delete(0, END)
             self.w_listbox_catalogs.insert(

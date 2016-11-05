@@ -38,7 +38,13 @@ class YamlSettingsMixin(object):
                 key: getattr(self, key)
                 for key in self.SAVED_SETTINGS if hasattr(self, key)
             }
-            yaml.dump(save_settings, stream, default_flow_style=False, indent=4)
+            yaml.dump(
+                save_settings,
+                stream,
+                default_flow_style=False,
+                indent=4,
+                allow_unicode=True,
+            )
 
 
 class SettingsModel(YamlSettingsMixin):
@@ -74,7 +80,7 @@ class SettingsModel(YamlSettingsMixin):
         'MAIN_WINDOW_X',
         'MAIN_WINDOW_Y',
         'BASE_CATALOG',
-        'PHOTO_FINDER_LAST_SIR',
+        'PHOTO_FINDER_LAST_DIR',
         'PHOTO_FINDER_LAST_NEW_FILES',
         'PHOTO_FINDER_LAST_NEW_FILES_DUBLS',
     )
