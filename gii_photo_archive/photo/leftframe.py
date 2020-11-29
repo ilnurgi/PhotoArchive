@@ -6,7 +6,7 @@
 
 import os
 
-from Tkinter import Listbox, END
+from tkinter import Listbox, END
 
 from settings.model import settings
 
@@ -72,8 +72,8 @@ class LeftFrame(BasePAFrame):
         if not os.path.isdir(catalog):
             return
 
-        if isinstance(catalog, str):
-            catalog = catalog.decode('utf-8')
+        # if isinstance(catalog, str):
+            # catalog = catalog.decode('utf-8')
 
         self.current_catalog = catalog
 

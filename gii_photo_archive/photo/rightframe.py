@@ -10,9 +10,9 @@ import os
 import platform
 import re
 
-from Tkinter import Label, Button, Entry, END
-from tkFileDialog import askdirectory
-from tkMessageBox import showerror, askyesno
+from tkinter import Label, Button, Entry, END
+from tkinter.filedialog import askdirectory
+from tkinter.messagebox import showerror, askyesno
 
 import vlc
 
@@ -27,7 +27,7 @@ AVAILABLE_VIDEO_FRMTS = ('.avi', '.mp4', '.AVI', '.3gpp', '.3gp')
 date_format = u'%Y-%m-%d %H-%M-%S'
 
 EXIF_TAGS = TAGS
-EXIF_TAGS_REVERSE = {v: k for k, v in TAGS.iteritems()}
+EXIF_TAGS_REVERSE = {v: k for k, v in TAGS.items()}
 
 TEXT_FILE_PATH = u'Путь к файлу'
 
@@ -164,7 +164,7 @@ class SettingsFrame(BasePAFrame):
         )
 
         # прописываем кнопки переместить
-        for label, label_widgets in self.widgets_with_rename.iteritems():
+        for label, label_widgets in self.widgets_with_rename.items():
             if label in LABELS_RENAME:
                 _btn = Button(self, text=u'Переименовать')
                 _btn.bind('<Button-1>', self.click_rename_button)

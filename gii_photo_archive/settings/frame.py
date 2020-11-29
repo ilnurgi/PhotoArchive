@@ -4,9 +4,8 @@
 панель с настройками
 """
 
-from Tkinter import Label, Button
-
-from tkFileDialog import askdirectory
+from tkinter import Label, Button
+from tkinter.filedialog import askdirectory
 
 from core.frame import BasePAFrame
 from settings.model import settings

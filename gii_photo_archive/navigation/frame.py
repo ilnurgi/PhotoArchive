@@ -4,7 +4,7 @@
 панель навигации
 """
 
-from Tkinter import Button
+from tkinter import Button
 
 from core.frame import BasePAFrame
 

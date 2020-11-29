@@ -6,7 +6,7 @@
 
 import os
 
-from Tkinter import Listbox, BOTH, TOP, END, Scrollbar, RIGHT, LEFT, Y
+from tkinter import Listbox, BOTH, TOP, END, Scrollbar, RIGHT, LEFT, Y
 
 from core.frame import BasePAFrame
 

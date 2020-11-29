@@ -4,7 +4,7 @@
 базовые фрейм для приложения
 """
 
-from Tkinter import Frame, SOLID
+from tkinter import Frame, SOLID
 
 
 class BasePAFrame(Frame):

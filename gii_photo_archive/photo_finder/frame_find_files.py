@@ -4,8 +4,8 @@ import hashlib
 import os
 from threading import Thread
 
-import Tkinter
-from tkFileDialog import askdirectory
+import tkinter
+from tkinter.filedialog import askdirectory
 
 from PIL import ImageTk, Image
 
@@ -21,22 +21,22 @@ class FindFilesFrame(BasePAFrame):
     def __init__(self, *args, **kwargs):
         BasePAFrame.__init__(self, *args, **kwargs)
 
-        self.w_button_find_start = Tkinter.Button(
+        self.w_button_find_start = tkinter.Button(
             self, text=u'Поиск', command=self.click_button_find)
-        self.w_button_move = Tkinter.Button(
+        self.w_button_move = tkinter.Button(
             self, text=u'Переместить', command=self.click_button_move)
 
-        self.w_listbox_files = Tkinter.Listbox(
-            self, selectmode=Tkinter.EXTENDED)
-        self.w_listbox_scroll = Tkinter.Scrollbar(self)
+        self.w_listbox_files = tkinter.Listbox(
+            self, selectmode=tkinter.EXTENDED)
+        self.w_listbox_scroll = tkinter.Scrollbar(self)
 
-        self.w_text_debugger = Tkinter.Text(self)
-        self.w_text_debugger_scroll = Tkinter.Scrollbar(self)
+        self.w_text_debugger = tkinter.Text(self)
+        self.w_text_debugger_scroll = tkinter.Scrollbar(self)
 
         self.w_image_frame = ImageFrame(self)
 
-        self.w_checkbutton_only_size_variable = Tkinter.BooleanVar()
-        self.w_checkbutton_only_size = Tkinter.Checkbutton(
+        self.w_checkbutton_only_size_variable = tkinter.BooleanVar()
+        self.w_checkbutton_only_size = tkinter.Checkbutton(
             self,
             text=u'Только по размеру',
             variable=self.w_checkbutton_only_size_variable)
@@ -48,9 +48,9 @@ class FindFilesFrame(BasePAFrame):
             '<<ListboxSelect>>', self.select_listbox_files)
 
         self.w_listbox_files.insert(
-            Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
+            tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
         self.w_listbox_files.insert(
-            Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
+            tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
 
         self.w_listbox_scroll.config(command=self.w_listbox_files.yview)
         self.w_listbox_files.config(yscrollcommand=self.w_listbox_scroll.set)
@@ -130,7 +130,7 @@ class FindFilesFrame(BasePAFrame):
 
         try:
             image_path = self.w_listbox_files.selection_get()
-        except (IndexError, Tkinter.TclError):
+        except (IndexError, tkinter.TclError):
             return
         if os.path.exists(image_path):
             try:
@@ -148,7 +148,7 @@ class FindFilesFrame(BasePAFrame):
         """
         try:
             image_paths = self.w_listbox_files.selection_get()
-        except (IndexError, Tkinter.TclError):
+        except (IndexError, tkinter.TclError):
             return
         if image_paths:        
             path = askdirectory(
@@ -168,15 +168,15 @@ class FindFilesFrame(BasePAFrame):
                     try:
                         os.rename(image_path, dst)
                     except IOError:
-                        print u'ERROR: ({}) ->({})'.format(image_path, dst)
+                        print('ERROR: ({}) ->({})'.format(image_path, dst))
                         break
 
     def click_button_find(self):
         """
         обработчик кнопки старта поиска фотграфии
         """
-        self.w_listbox_files.delete(0, Tkinter.END)
-        self.w_text_debugger.delete(1.0, Tkinter.END)
+        self.w_listbox_files.delete(0, tkinter.END)
+        self.w_text_debugger.delete(1.0, tkinter.END)
         self.w_image_frame.reset()
 
         thread = Thread(target=self._find_new_fils)
@@ -210,9 +210,9 @@ class FindFilesFrame(BasePAFrame):
             for item in new_dubl_files]
         
         self.w_listbox_files.insert(
-            Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
+            tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES)
         self.w_listbox_files.insert(
-            Tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
+            tkinter.END, *settings.PHOTO_FINDER_LAST_NEW_FILES_DUBLS)
 
     def _get_new_files(self, src, dst, use_hash=False):
         """
@@ -225,7 +225,7 @@ class FindFilesFrame(BasePAFrame):
         если размер и название совпадают то файлы считаются одинаковыми
         """
 
-        self.w_text_debugger.insert(Tkinter.END, u"Ищем новые фотографии\n")
+        self.w_text_debugger.insert(tkinter.END, u"Ищем новые фотографии\n")
         # собираем данные по файлам которые у нас уже есть
         dst_map = {}
         for root, dirs, files in os.walk(dst):
@@ -234,9 +234,9 @@ class FindFilesFrame(BasePAFrame):
                 dst_map.setdefault(os.stat(path).st_size, []).append(path)
 
         self.w_text_debugger.insert(
-            Tkinter.END,
+            tkinter.END,
             u"Количесвто файлов нашего архива: {}\n".format(
-                sum(len(i) for i in dst_map.itervalues())))
+                sum(len(i) for i in dst_map.values())))
 
         # собираем данные по файлам которых у нас нет
         src_map = {}
@@ -250,9 +250,9 @@ class FindFilesFrame(BasePAFrame):
                 src_map.setdefault(os.stat(path).st_size, []).append(path)
 
         self.w_text_debugger.insert(
-            Tkinter.END,
+            tkinter.END,
             u"Количесвто файлов стороннего архива: {}\n".format(
-                sum(len(i) for i in src_map.itervalues())))
+                sum(len(i) for i in src_map.values())))
 
         # новые файлы по размеру
         new_files = []
@@ -263,11 +263,11 @@ class FindFilesFrame(BasePAFrame):
         counter = 0
         count_src = len(src_map.keys()) 
         step = count_src / 10 or 1
-        for size, photos in src_map.iteritems():
+        for size, photos in src_map.items():
             counter += 1
             if counter % step == 0:
                 self.w_text_debugger.insert(
-                    Tkinter.END,
+                    tkinter.END,
                     u"{}0%, ".format(counter/step))
             if size not in dst_map:
                 # у нас нету файла с таким размером, значит он новый
@@ -307,11 +307,11 @@ class FindFilesFrame(BasePAFrame):
                                     break
 
         self.w_text_debugger.insert(
-            Tkinter.END,
+            tkinter.END,
             u"\nНайдено совсем новых файлов: {}\n".format(len(new_files)))
 
         self.w_text_debugger.insert(
-            Tkinter.END,
+            tkinter.END,
             u"Найдено новых файлов: {}\n".format(len(new_dubl_files)))
 
         new_files.sort()
@@ -327,7 +327,7 @@ class ImageFrame(BasePAFrame):
     def __init__(self, *args, **kwargs):
         BasePAFrame.__init__(self, *args, **kwargs)
 
-        self.image_label = Tkinter.Label(self)
+        self.image_label = tkinter.Label(self)
 
     def _pa_layout(self):
         self.image_label.pack()

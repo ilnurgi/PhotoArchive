@@ -24,9 +24,9 @@ class YamlSettingsMixin(object):
         with open(self.config_path) as stream:
             config = yaml.load(stream)
             if config:
-                for key, value in config.iteritems():
+                for key, value in config.items():
                     if isinstance(value, dict):
-                        for k, v in value.iteritems():
+                        for k, v in value.items():
                             self_attr = getattr(self, key)
                             self_attr[k] = v
                     else:

@@ -4,15 +4,14 @@
 приложение
 """
 
-from Tkinter import Tk
+from tkinter import Tk
 
-from helpers import parsegeometry
-
-from navigation.frame import NavigationFrame
-from photo.frame import PhotoFrame
-from photo_finder.frame import PhotoFinderFrame
-from settings.frame import SettingsFrame
-from settings.model import settings
+from gii_photo_archive.helpers import parsegeometry
+from gii_photo_archive.navigation.frame import NavigationFrame
+from gii_photo_archive.photo.frame import PhotoFrame
+from gii_photo_archive.photo_finder.frame import PhotoFinderFrame
+from gii_photo_archive.settings.frame import SettingsFrame
+from gii_photo_archive.settings.model import settings
 
 
 class App(object):
